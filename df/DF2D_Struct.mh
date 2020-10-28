@@ -1,0 +1,29 @@
+
+// insert into your DF struct where Df(float2) is defined
+
+float2 DfGrad(float2 p, float2 h)
+{
+    h *= 0.5;
+    return normalize(float2(
+        Df(p + float2(h.x, 0)).x - Df(p - float2(h.x, 0).x),
+        Df(p + float2(0, h.y)).x - Df(p - float2(0, h.y).x)
+    ))
+}
+
+float2 DfGrad(float2 p)
+{
+    float2 pd = float2(ddx(p.x), ddy(p.y));
+    return DfGrad(p, pd);
+}
+
+float DfAngle(float2 p, float h)
+{
+    float2 grad = DfGrad(p, h);
+    return atan2(grad.y, grad.x);
+}
+
+float DfAngle(float2 p)
+{
+    float2 grad = DfGrad(p);
+    return atan2(grad.y, grad.x);
+}

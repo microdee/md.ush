@@ -1,0 +1,25 @@
+#if !defined(df_RoundedCorner_mh)
+#define df_RoundedCorner_mh 1
+
+struct RoundedCorner_str
+{
+    float2 Size;
+    float4 Corners;
+
+    float sdRoundedBox( in float2 p, in float2 b, in float4 r )
+    {
+        r.xy = (p.x>0.0)?r.xy : r.zw;
+        r.x  = (p.y>0.0)?r.x  : r.y;
+        float2 q = abs(p)-b+r.x;
+        return min(max(q.x,q.y),0.0) + length(max(q,0.0)) - r.x;
+    }
+
+    float Df(float2 p)
+    {
+        return sdRoundedBox(p, Size, Corners);
+    }
+
+#include "DF2D_Struct.mh"
+} RoundedCorner;
+
+#endif

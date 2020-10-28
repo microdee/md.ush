@@ -1,0 +1,130 @@
+#if !defined(math_quaternion_fxh)
+#define math_quaternion_fxh
+
+#include "common.mh"
+
+#define qmul(q1, q2) \
+    float4( \
+        (q1).w * (q2).x + (q1).x * (q2).w + (q1).z * (q2).y - (q1).y * (q2).z, \
+        (q1).w * (q2).y + (q1).y * (q2).w + (q1).x * (q2).z - (q1).z * (q2).x, \
+        (q1).w * (q2).z + (q1).z * (q2).w + (q1).y * (q2).x - (q1).x * (q2).y, \
+        (q1).w * (q2).w - (q1).x * (q2).x - (q1).y * (q2).y - (q1).z * (q2).z \
+	)
+
+#define qinvert(q) float4(-(q).xyz,(q).w)
+
+#define qrot(q) mul( \
+    float4x4( \
+         (q).w, (q).z,-(q).y, (q).x, \
+        -(q).z, (q).w, (q).x, (q).y, \
+         (q).y,-(q).x, (q).w, (q).z, \
+        -(q).x,-(q).y,-(q).z, (q).w \
+    ), \
+    float4x4( \
+         (q).w, (q).z,-(q).y,-(q).x, \
+        -(q).z, (q).w, (q).x,-(q).y, \
+         (q).y,-(q).x, (q).w,-(q).z, \
+         (q).x, (q).y, (q).z, (q).w \
+    ))
+
+#define axes2q(X, Y, Z) m2q(float3x3(X, Y, Z))
+
+#define aa2q(a, r) \
+    float4((a).x * sin((r)*PI), (a).y * sin((r)*PI), (a).z * sin((r)*PI), cos((r)*PI))
+
+struct quat_str
+{
+    float4 m2q(float3x3 m)
+    {
+        float4 q = float4(0,0,0,1);
+        q.w = sqrt( max( 0, 1 + m._11 + m._22 + m._33 ) ) / 2;
+        q.x = sqrt( max( 0, 1 + m._11 - m._22 - m._33 ) ) / 2;
+        q.y = sqrt( max( 0, 1 - m._11 + m._22 - m._33 ) ) / 2;
+        q.z = sqrt( max( 0, 1 - m._11 - m._22 + m._33 ) ) / 2;
+        q.x = copysign( q.x, m._23 - m._32 );
+        q.y = copysign( q.y, m._31 - m._13 );
+        q.z = copysign( q.z, m._12 - m._21 );
+        return normalize(q);
+    }
+
+    float4 euler(float3 pyr)
+    {
+        float4 res = aa2q(float3(0,1,0), pyr.y);
+        res = qmul(res, aa2q(float3(1,0,0), pyr.x));
+        res = qmul(res, aa2q(float3(0,0,1), pyr.z));
+        return res;
+    }
+
+    float4 euler(float pp, float yy, float rr)
+    {
+        float4 res = aa2q(float3(0,1,0), yy);
+        res = qmul(res, aa2q(float3(1,0,0), pp));
+        res = qmul(res, aa2q(float3(0,0,1), rr));
+        return res;
+    }
+
+    float4 slerp (float4 a, float4 b, float t )
+    {
+        if ( t <= 0.0f )
+        {
+            return a;
+        }
+
+        if ( t >= 1.0f )
+        {
+            return b;
+        }
+
+        float coshalftheta = dot(a, b);
+        //coshalftheta = std::min (1.0f, std::max (-1.0f, coshalftheta));
+        float4 c = b;
+
+        // Angle is greater than 180. We can negate the angle/quat to get the
+        // shorter rotation to reach the same destination.
+        if ( coshalftheta < 0.0f )
+        {
+            coshalftheta = -coshalftheta;
+            c = -c;
+        }
+
+            if ( coshalftheta > 0.99f )
+            {
+            // Angle is tiny - save some computation by lerping instead.
+                    float4 r = lerp(a, c, t);
+                    return r;
+            }
+
+        float halftheta = acos(coshalftheta);
+        float sintheta = sin(halftheta);
+
+        return (sin((1.0f - t) * halftheta) * a + sin(t * halftheta) * c) / sin(halftheta);
+    }
+
+    float4 qLookAt(float3 d, float3 fwvec)
+    {
+        float3 dn = normalize(d);
+        float3 fn = normalize(fwvec);
+        float dfd = pows(dot(dn, fn), 1.5);
+        if(dfd >= 0.9999)
+            return float4(0,0,0,1);
+        if(dfd <= -0.9999)
+            return float4(0,1,0,0);
+
+        float3 dfc = normalize(cross(fn, dn));
+
+        float mangle = dfd * -0.25 + 0.25;
+        float4 rot = aa2q(dfc, mangle);
+        float eangle = clamp(dfd * 0.5, -0.5, 0);
+        return qmul(aa2q(fn, eangle), rot);
+    }
+}
+
+quat_str quat_ff;
+
+#define m2q(m) quat_ff.m2q(m)
+#define euler(pyr) quat_ff.euler(pyr)
+#define euler(pp, yy, rr) quat_ff.euler(pp, yy, rr)
+#define slerp (a, b, t ) quat_ff.slerp (a, b, t )
+#define qLookAt(d, fwvec) quat_ff.qLookAt(d, fwvec)
+
+#endif

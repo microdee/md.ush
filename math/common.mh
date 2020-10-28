@@ -1,0 +1,67 @@
+#if !defined(math_common_fxh)
+#define math_common_fxh 1
+
+#include "const.mh"
+#include "vectors.mh"
+
+#define sgn(x) lerp(1, -1, (x) < 0)
+#define sqr(x) (x*x)
+#define square(x) (x*x)
+#define lsqr(x) dot(x, x);
+#define lengthSqr(x) dot(x, x);
+
+#define copysign(a, b) (a * sign(b))
+
+#define pows(a, b) (pow(abs(a), b)*sign(a))
+
+#define safediv(a, b) (abs(a) / max(abs(b), FLOAT_MIN) * sign(a * b))
+
+#define map(l, smin, smax, dmin, dmax) ((dmin) + (((l) - (smin)) / ((smax) - (smin))) * (dmax - (dmin)))
+#define mapClamp(l, smin, smax, dmin, dmax) map(clamp(l, min(smin, smax), max(smin, smax)), smin, smax, dmin, dmax)
+#define mapWrap(l, smin, smax, dmin, dmax) (dmin + ((((l - (smin)) / (smax - (smin))) + ((l - (smin)) / (smax - (smin))) < 0) % 1) * (dmax - (dmin)))
+#define mapMirror(l, smin, smax, dmin, dmax) (dmin + ((1-2*abs(frac((l - (smin)) / (smax - (smin)) * 0.5) - 0.5)) % 1) * (dmax - (dmin)))
+
+#define vmax2(a) max((a).x, (a).y)
+#define vmax3(a) max(vmax2(a), (a).z)
+#define vmax4(a) max(vmax3(a), (a).w)
+#define vmin2(a) min((a).x, (a).y)
+#define vmin3(a) min(vmin2(a), (a).z)
+#define vmin4(a) min(vmin3(a), (a).w)
+
+#define modf(x, y) (x - y * floor(x/y))
+
+#define scale(s) float4x4(s.x, 0, 0, 0, 0, s.y, 0, 0, 0, 0, s.z, 0, 0, 0, 0, 1)
+#define translate(t) float4x4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, t.x, t.y, t.z, 1)
+
+#define avg(a, b) (((a) + (b)) / 2.0)
+#define dot2(a) dot(a,a)
+
+// only useful for non-rotating UI widgets, where UV coordinates are assumed to cover the entire widget.
+#define resolution(uv) float2(1/ddx(uv.x), 1/ddy(uv.y))
+
+#define dduv(uv) max(abs(ddx(uv.x)), abs(ddy(uv.y)))
+
+struct ddxy_str
+{
+    float ddxy(float a, float2 uv)
+    {
+        float mdd = dduv(a);
+        return min(mdd > 0 ? mdd : 1, dduv(uv));
+    }
+};
+
+ddxy_str ddxy_ff;
+
+#define ddxy(a, uv) ddxy_ff.ddxy(a, uv)
+
+#define sm_gt(a, b, uv) saturate(map(a, b, b+ddxy(a, uv)*2, 0, 1))
+#define sm_lt(a, b, uv) (1-sm_gt(a, b, uv))
+
+// transformation to avoid ghosting artifacts possibly caused by smooth comparisons
+#define aa_clip(a, uv) map(a, dduv(uv)*2, 1-dduv(uv)*2, 0, 1)
+
+/* Anti-aliased threshold:
+    sm_gt(variable, aa_clip(param0to1, uv), uv)
+*/
+
+#endif

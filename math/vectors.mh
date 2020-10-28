@@ -1,0 +1,25 @@
+#if !defined(math_vectors_fxh)
+#define math_vectors_fxh
+
+#define GuessTangentSpace(n, up) \
+    float3x3( \
+        normalize(cross(n, up)), \
+        normalize(cross(n, t)), \
+        n)
+
+#define GuessTangentSpace(n) \
+    GuessTangentSpace(n, smoothstep(float3(0,1,0), float3(1,0,0), saturate((dot(n, float3(0,1,0))-0.9) * 10)))
+
+#define EyeDirToTangentSpace(eye, tan, bin, norm) \
+    mul(eye, transpose(float3x3(-tan, bin, norm)))
+
+#define LightDirToTangentSpace(ldir, tan, bin, norm) \
+    mul(-ldir, transpose(float3x3(tan, -bin, norm)))
+
+#define RectToPolar(cart) float2(atan2((cart).y, (cart).x), length(cart))
+#define PolarToRect(pol) float2(cos((pol).x)*(pol).y, sin((pol).x)*(pol).y)
+
+#define RectToSphere(cart) float3(atan2((cart).y, (cart).x), acos((cart).z/length(cart)), length(cart))
+#define SphereToRect(sph) float3((sph).z*cos((sph).x)*sin((sph).y), (sph).z*sin((sph).x)*sin((sph).y), (sph).z*cos((sph).y))
+
+#endif
