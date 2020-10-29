@@ -1,0 +1,155 @@
+
+float U(float a, float b) {return min(a,b);}
+float S(float a, float b) {return max(a,-b);}
+float I(float a, float b) {return max(a,b);}
+
+// smooth operations
+float USmooth( float a, float b, float k )
+{
+    float h = clamp( 0.5+0.5*(b-a)/k, 0.0, 1.0 );
+    return lerp( b, a, h ) - k*h*(1.0-h);
+}
+float SSmooth( float a, float b, float k )
+{
+    return log( exp(a/k) + exp(-b/k) ) * k;
+}
+float ISmooth( float a, float b, float k )
+{
+    return log( exp(a/k) + exp(b/k) ) * k;
+}
+
+// The "Chamfer" flavour makes a 45-degree chamfered edge (the diagonal of a square of size <r>):
+float UChamfer(float a, float b, float r) {
+	return min(min(a, b), (a - r + b)*sqrt(0.5));
+}
+
+// Intersection has to deal with what is normally the inside of the resulting object
+// when using union, which we normally don't care about too much. Thus, intersection
+// implementations sometimes differ from union implementations.
+float IChamfer(float a, float b, float r) {
+	return max(max(a, b), (a + r + b)*sqrt(0.5));
+}
+// Difference can be built from Intersection or Union:
+float SChamfer (float a, float b, float r) {
+	return IChamfer(a, -b, r);
+}
+
+// The "Round" variant uses a quarter-circle to join the two objects smoothly:
+float URound(float a, float b, float r) {
+	float2 u = max(float2(r - a,r - b), 0);
+	return max(r, min (a, b)) - length(u);
+}
+float IRound(float a, float b, float r) {
+	float2 u = max(float2(r + a,r + b), 0);
+	return min(-r, max (a, b)) + length(u);
+}
+float SRound (float a, float b, float r) {
+	return IRound(a, -b, r);
+}
+
+// The "Columns" flavour makes n-1 circular columns at a 45 degree angle:
+float UColumns(float a, float b, float r, float n) {
+	if ((a < r) && (b < r)) {
+		float2 p = float2(a, b);
+		float columnradius = r*sqrt(2)/((n-1)*2+sqrt(2));
+		oR45(p);
+		p.x -= sqrt(2)/2*r;
+		p.x += columnradius*sqrt(2);
+		if (mod(n,2) == 1) {
+			p.y += columnradius;
+		}
+		// At this point, we have turned 45 degrees and moved at a point on the
+		// diagonal that we want to place the columns on.
+		// Now, repeat the domain along this direction and place a circle.
+		oMod1(p.y, columnradius*2);
+		float result = length(p) - columnradius;
+		result = min(result, p.x);
+		result = min(result, a);
+		return min(result, b);
+	} else {
+		return min(a, b);
+	}
+}
+float SColumns(float a, float b, float r, float n) {
+	a = -a;
+	float m = min(a, b);
+	//avoid the expensive computation where not needed (produces discontinuity though)
+	if ((a < r) && (b < r)) {
+		float2 p = float2(a, b);
+		float columnradius = r*sqrt(2)/n/2.0;
+		columnradius = r*sqrt(2)/((n-1)*2+sqrt(2));
+
+		oR45(p);
+		p.y += columnradius;
+		p.x -= sqrt(2)/2*r;
+		p.x += -columnradius*sqrt(2)/2;
+
+		if (mod(n,2) == 1) {
+			p.y += columnradius;
+		}
+		oMod1(p.y,columnradius*2);
+
+		float result = -length(p) + columnradius;
+		result = max(result, p.x);
+		result = min(result, a);
+		return -min(result, b);
+	} else {
+		return -m;
+	}
+}
+float IColumns(float a, float b, float r, float n) {
+	return SColumns(a,-b,r, n);
+}
+
+// The "Stairs" flavour produces n-1 steps of a staircase:
+// much less stupid version by paniq
+float UStairs(float a, float b, float r, float n) {
+	float s = r/n;
+	float u = b-r;
+	return min(min(a,b), 0.5 * (u + a + abs ((mod (u - a + s, 2 * s)) - s)));
+}
+// We can just call Union since stairs are symmetric.
+float IStairs(float a, float b, float r, float n) {
+	return -UStairs(-a, -b, r, n);
+}
+float SStairs(float a, float b, float r, float n) {
+	return -UStairs(-a, b, r, n);
+}
+
+// Similar to fOpUnionRound, but more lipschitz-y at acute angles
+// (and less so at 90 degrees). Useful when fudging around too much
+// by MediaMolecule, from Alex Evans' siggraph slides
+float USoft(float a, float b, float r) {
+	float e = max(r - abs(a - b), 0);
+	return min(a, b) - e*e*0.25/r;
+}
+
+float Onion( float d, float r )
+{
+    return abs(d) - r;
+}
+
+// produces a cylindical pipe that runs along the intersection.
+// No objects remain, only the pipe. This is not a boolean operator.
+float Pipe(float a, float b, float r) {
+	return length(float2(a, b)) - r;
+}
+
+// produces a cylindical pipe that runs along the intersection.
+// No objects remain, only the pipe. This is not a boolean operator.
+float Pipe(float a, float b, float r, float pwr) {
+	return lengthn(float2(a, b), pwr) - r;
+}
+
+// first object gets a v-shaped engraving where it intersect the second
+float Engrave(float a, float b, float r) {
+	return max(a, (a + r - abs(b))*sqrt(0.5));
+}
+// first object gets a capenter-style groove cut out
+float Groove(float a, float b, float ra, float rb) {
+	return max(a, min(a + ra, rb - abs(b)));
+}
+// first object gets a capenter-style tongue attached
+float Tongue(float a, float b, float ra, float rb) {
+	return min(a, max(a - ra, abs(b) - rb));
+}
