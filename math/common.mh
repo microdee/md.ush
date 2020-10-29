@@ -37,16 +37,22 @@
 #define dot2(a) dot(a,a)
 
 // only useful for non-rotating UI widgets, where UV coordinates are assumed to cover the entire widget.
-#define resolution(uv) float2(1/ddx(uv.x), 1/ddy(uv.y))
+#define resolution(uv) float2(1.0f/ddx(uv.x), 1.0f/ddy(uv.y))
 
+#define ddu(u) max(abs(ddx(u)), abs(ddy(u)))
 #define dduv(uv) max(abs(ddx(uv.x)), abs(ddy(uv.y)))
 
 struct ddxy_str
 {
     float ddxy(float a, float2 uv)
     {
+        float mdd = ddu(a);
+        return min(mdd > 0.0f ? mdd : 1.0f, dduv(uv));
+    }
+    float ddxy(float2 a, float2 uv)
+    {
         float mdd = dduv(a);
-        return min(mdd > 0 ? mdd : 1, dduv(uv));
+        return min(mdd > 0.0f ? mdd : 1.0f, dduv(uv));
     }
 };
 

@@ -7,7 +7,7 @@
         normalize(cross(n, t)), \
         n)
 
-#define GuessTangentSpace(n) \
+#define GuessTangentSpaceN(n) \
     GuessTangentSpace(n, smoothstep(float3(0,1,0), float3(1,0,0), saturate((dot(n, float3(0,1,0))-0.9) * 10)))
 
 #define EyeDirToTangentSpace(eye, tan, bin, norm) \
