@@ -5,16 +5,16 @@
 #include "vectors.mh"
 
 #define sgn(x) lerp(1, -1, (x) < 0)
-#define sqr(x) (x*x)
-#define square(x) (x*x)
+#define sqr(x) ((x)*(x))
+#define square(x) ((x)*(x))
 #define lsqr(x) dot(x, x);
 #define lengthSqr(x) dot(x, x);
 
-#define copysign(a, b) (a * sign(b))
+#define copysign(a, b) ((a) * sign(b))
 
 #define pows(a, b) (pow(abs(a), b)*sign(a))
 
-#define safediv(a, b) (abs(a) / max(abs(b), FLOAT_MIN) * sign(a * b))
+#define safediv(a, b) (abs(a) / max(abs(b), FLOAT_MIN) * sign((a) * (b)))
 
 #define map(l, smin, smax, dmin, dmax) ((dmin) + (((l) - (smin)) / ((smax) - (smin))) * (dmax - (dmin)))
 #define mapClamp(l, smin, smax, dmin, dmax) map(clamp(l, min(smin, smax), max(smin, smax)), smin, smax, dmin, dmax)
@@ -28,7 +28,7 @@
 #define vmin3(a) min(vmin2(a), (a).z)
 #define vmin4(a) min(vmin3(a), (a).w)
 
-#define modf(x, y) (x - y * floor(x/y))
+#define modf(x, y) ((x) - (y) * floor((x)/(y)))
 
 #define scale(s) float4x4(s.x, 0, 0, 0, 0, s.y, 0, 0, 0, 0, s.z, 0, 0, 0, 0, 1)
 #define translate(t) float4x4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, t.x, t.y, t.z, 1)
@@ -60,7 +60,7 @@ ddxy_str ddxy_ff;
 
 #define ddxy(a, uv) ddxy_ff.ddxy(a, uv)
 
-#define sm_gt(a, b, uv) saturate(map(a, b, b+ddxy(a, uv)*2, 0, 1))
+#define sm_gt(a, b, uv) saturate(map(a, b, (b) + ddxy(a, uv)*2, 0, 1))
 #define sm_lt(a, b, uv) (1-sm_gt(a, b, uv))
 
 // transformation to avoid ghosting artifacts possibly caused by smooth comparisons
