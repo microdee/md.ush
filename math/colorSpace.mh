@@ -2,24 +2,24 @@
 
 struct colorspace_str
 {
-	float3 HUEtoRGB(in float H){
+	float3 HUE_RGB(in float H){
 		H=frac(H);
 		float R = abs(H * 6 - 3) - 1;
 		float G = 2 - abs(H * 6 - 2);
 		float B = 2 - abs(H * 6 - 4);
 		return saturate(float3(R,G,B));
 	}
-	float3 HSVtoRGB(in float3 HSV){
-		float3 RGB = HUEtoRGB(HSV.x);
+	float3 HSV_RGB(in float3 HSV){
+		float3 RGB = HUE_RGB(HSV.x);
 		return ((RGB - 1) * HSV.y + 1) * HSV.z;
 	}
-	float3 HSLtoRGB(in float3 HSL)
+	float3 HSL_RGB(in float3 HSL)
 	{
-		float3 RGB = HUEtoRGB(HSL.x);
+		float3 RGB = HUE_RGB(HSL.x);
 		float C = (1 - abs(2 * HSL.z - 1)) * HSL.y;
 		return (RGB - 0.5) * C + HSL.z;
 	}
-	float3 RGBtoHSV(in float3 RGB){
+	float3 RGB_HSV(in float3 RGB){
 		float3 HSV = 0;
 		HSV.z = max(RGB.r, max(RGB.g, RGB.b));
 		float M = min(RGB.r, min(RGB.g, RGB.b));
@@ -36,7 +36,7 @@ struct colorspace_str
 		}
 		return HSV;
 	}
-	float3 RGBtoHSL(in float3 RGB){
+	float3 RGB_HSL(in float3 RGB){
 		float3 HSL = 0;
 		float U, V;
 		U = -min(RGB.r, min(RGB.g, RGB.b));
