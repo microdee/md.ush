@@ -1,6 +1,3 @@
-#if !defined(math_bitwise_fxh)
-#define math_bitwise_fxh 1
-
 struct bitwise_str
 {
 	uint BwJoin(float a, float b)
@@ -49,12 +46,3 @@ struct bitwise_str
 		return ret;
 	}
 }
-
-bitwise_str bitwise_ff;
-
-#define BwJoin(a, b) bitwise_ff.BwJoin(a, b)
-#define BwJoinHalf(a, b) bitwise_ff.BwJoinHalf(a, b)
-#define BwSplit(a) bitwise_ff.BwSplit(a)
-#define BwSplitUint(a) bitwise_ff.BwSplitUint(a)
-#define BwSplitHalf(a) bitwise_ff.BwSplitHalf(a)
-#endif

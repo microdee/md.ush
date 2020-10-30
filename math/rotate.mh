@@ -3,20 +3,22 @@
 
 #include "const.mh"
 
+#define rotate2d(_angle) float2x2(cos(_angle), -sin(_angle), sin(_angle), cos(_angle))
+#endif
+
 struct rotate_str {
-    float2 VRotate(float2 orig, float cy)
+    float2 rot(float2 orig, float cy)
     {
-        float isin = sin(cy * PI*2);
-        float icos = cos(cy * PI*2);
+        float isin = sin(cy);
+        float icos = cos(cy);
         return float2(
             (orig.x * icos) + (orig.y * (-isin)),
             (orig.x * isin) + (orig.y * icos)
         );
     }
 
-    float4x4 VRotate(float rotX, float rotY, float rotZ)
+    float4x4 rot(float rotX, float rotY, float rotZ)
     {
-        rotX *= PI*2; rotY *= PI*2; rotZ *= PI*2;
         float sx = sin(rotX); float cx = cos(rotX);
         float sy = sin(rotY); float cy = cos(rotY);
         float sz = sin(rotZ); float cz = cos(rotZ);
@@ -28,10 +30,4 @@ struct rotate_str {
             0             , 0    , 0              , 1
         );
     }
-} rotate_ff;
-
-#define rotate2d(_angle) float2x2(cos(_angle), -sin(_angle), sin(_angle), cos(_angle))
-#define rotate2d_pos(o, c) rotate_ff.VRotate(o, c)
-
-#define rotate3d(rx, ry, rz) rotate_ff.VRotate(rx, ry, rz)
-#endif
+}

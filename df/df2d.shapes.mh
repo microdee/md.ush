@@ -1,0 +1,4 @@
+
+struct df2d_shapes_str {
+#include "df2d.shapes.inline.mh"
+}

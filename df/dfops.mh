@@ -1,8 +1,4 @@
-#if !defined(df_dfops_mh)
-#define df_dfops_mh 1
 
 struct dfops_str {
-#include "dfops_inline.mh"
-} dfops;
-
-#endif
+#include "dfops.inline.mh"
+}

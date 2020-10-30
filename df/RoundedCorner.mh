@@ -1,20 +1,15 @@
-#if !defined(df_RoundedCorner_mh)
-#define df_RoundedCorner_mh 1
-
 struct RoundedCorner_str
 {
     float2 Size;
     float4 Corners;
 
-#include "DF2D_Shapes.mh"
+#include "df2d.shapes.inline.mh"
 
     float Df(float2 p)
     {
         return sdRoundedBox(p, Size, Corners);
     }
 
-#include "DF2D_FieldFunctions.mh"
+#include "df2d.fieldfuncs.inline.mh"
 
-} RoundedCorner;
-
-#endif
+}

@@ -5,8 +5,8 @@ float2 DfGrad(float2 p, float2 h)
 {
     h *= 0.5;
     return normalize(float2(
-        Df(p + float2(h.x, 0)).x - Df(p - float2(h.x, 0).x),
-        Df(p + float2(0, h.y)).x - Df(p - float2(0, h.y).x)
+        Df(p + float2(h.x, 0)).x - Df(p - float2(h.x, 0)).x,
+        Df(p + float2(0, h.y)).x - Df(p - float2(0, h.y)).x
     ));
 }
 

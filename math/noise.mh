@@ -1,5 +1,28 @@
-#if !defined(math_noise_fxh)
-#define math_noise_fxh
+#if !defined(math_noise_mh)
+#define math_noise_mh
+
+#define dnoise(x, RandomSeed) noise_ff.dnoise_internal(x, RandomSeed)
+#define dnoise2(x, RandomSeed) noise_ff.dnoise2_internal(x, RandomSeed)
+#define dnoise3(x, RandomSeed) noise_ff.dnoise3_internal(x, RandomSeed)
+#define dnoise4(x, RandomSeed) noise_ff.dnoise4_internal(x, RandomSeed)
+#define voronoiseHash3(p, phase) noise_ff.voronoiseHash3_internal(p, phase)
+#define voronoise(uv, voronoi, smoothness, phase) noise_ff.voronoise_internal(uv, voronoi, smoothness, phase)
+#define voronoise3(pos, voronoi, smoothness) noise_ff.voronoise3_internal(pos, voronoi, smoothness)
+#define hash11(p) noise_ff.hash11_internal(p)
+#define hash12(p) noise_ff.hash12_internal(p)
+#define hash13(p3) noise_ff.hash13_internal(p3)
+#define hash21(p) noise_ff.hash21_internal(p)
+#define hash22(p) noise_ff.hash22_internal(p)
+#define hash23(p3) noise_ff.hash23_internal(p3)
+#define hash31(p) noise_ff.hash31_internal(p)
+#define hash32(p) noise_ff.hash32_internal(p)
+#define hash33(p3) noise_ff.hash33_internal(p3)
+#define hash41(p) noise_ff.hash41_internal(p)
+#define hash42(p) noise_ff.hash42_internal(p)
+#define hash43(p) noise_ff.hash43_internal(p)
+#define hash44(p4) noise_ff.hash44_internal(p4)
+
+#endif
 
 struct noise_str
 {
@@ -8,13 +31,13 @@ struct noise_str
 		u=dot(u+.2,float3(1,57,21));
 		return (u.x*(.1+sin(u.x)));
 	}
-	float dnoise(float2 x,float RandomSeed)
+	float dnoise_internal(float2 x,float RandomSeed)
 	{
 		RandomSeed+=.00001;
 		float c=mpfxh_dnoise1(float3((x+RandomSeed*13+41)+11,length(sin((x-59)/151+RandomSeed*float2(11,7))))+.5);
 		return frac(c+x.x*2+RandomSeed);
 	}
-	float2 dnoise2(float2 x,float RandomSeed)
+	float2 dnoise2_internal(float2 x,float RandomSeed)
 	{
 		RandomSeed+=.00001;
 		float2 c={
@@ -23,7 +46,7 @@ struct noise_str
 		};
 		return frac(c+x.x*2+RandomSeed+dot(c,1));
 	}
-	float3 dnoise3(float2 x,float RandomSeed)
+	float3 dnoise3_internal(float2 x,float RandomSeed)
 	{
 		RandomSeed+=.00001;
 		float3 c={
@@ -33,7 +56,7 @@ struct noise_str
 		};
 		return frac(c+x.x*2+RandomSeed+dot(c,1));
 	}
-	float4 dnoise4(float2 x,float RandomSeed)
+	float4 dnoise4_internal(float2 x,float RandomSeed)
 	{
 		RandomSeed+=.00001;
 		float4 c={
@@ -45,7 +68,7 @@ struct noise_str
 		return frac(c+x.x*2+RandomSeed+dot(c,1));
 	}
 
-	float3 voronoiseHash3(float2 p, float3 phase)
+	float3 voronoiseHash3_internal(float2 p, float3 phase)
 	{
 		float3 q = float3( dot(p,float2(127.1,311.7)), 
 				dot(p,float2(269.5,183.3)), 
@@ -53,7 +76,7 @@ struct noise_str
 		return cos(sin(q)*43758.5453 + phase)/2.0+0.5;
 	}
 
-	float voronoise(float2 uv, float voronoi, float smoothness, float3 phase)
+	float voronoise_internal(float2 uv, float voronoi, float smoothness, float3 phase)
 	{
 		float2 p = floor(uv);
 		float2 f = frac(uv);
@@ -76,7 +99,7 @@ struct noise_str
 		return va/wt;
 	}
 
-	float3 voronoise3(float3 pos, float voronoi, float smoothness)
+	float3 voronoise3_internal(float3 pos, float voronoi, float smoothness)
 	{
 		return float3(
 			voronoise(pos.xy, voronoi, smoothness, float3(0, 0, pos.z)),
@@ -87,7 +110,7 @@ struct noise_str
 
 	//----------------------------------------------------------------------------------------
 	//  1 out, 1 in...
-	float hash11(float p)
+	float hash11_internal(float p)
 	{
 		p = frac(p * .1031);
 		p *= p + 19.19;
@@ -97,7 +120,7 @@ struct noise_str
 
 	//----------------------------------------------------------------------------------------
 	//  1 out, 2 in...
-	float hash12(float2 p)
+	float hash12_internal(float2 p)
 	{
 		float3 p3  = frac(p.xyx * .1031);
 		p3 += dot(p3, p3.yzx + 19.19);
@@ -106,7 +129,7 @@ struct noise_str
 
 	//----------------------------------------------------------------------------------------
 	//  1 out, 3 in...
-	float hash13(float3 p3)
+	float hash13_internal(float3 p3)
 	{
 		p3  = frac(p3 * .1031);
 		p3 += dot(p3, p3.yzx + 19.19);
@@ -115,7 +138,7 @@ struct noise_str
 
 	//----------------------------------------------------------------------------------------
 	//  2 out, 1 in...
-	float2 hash21(float p)
+	float2 hash21_internal(float p)
 	{
 		float3 p3 = frac(p * float3(.1031, .1030, .0973));
 		p3 += dot(p3, p3.yzx + 19.19);
@@ -125,7 +148,7 @@ struct noise_str
 
 	//----------------------------------------------------------------------------------------
 	///  2 out, 2 in...
-	float2 hash22(float2 p)
+	float2 hash22_internal(float2 p)
 	{
 		float3 p3 = frac(p.xyx * float3(.1031, .1030, .0973));
 		p3 += dot(p3, p3.yzx+19.19);
@@ -135,7 +158,7 @@ struct noise_str
 
 	//----------------------------------------------------------------------------------------
 	///  2 out, 3 in...
-	float2 hash23(float3 p3)
+	float2 hash23_internal(float3 p3)
 	{
 		p3 = frac(p3 * float3(.1031, .1030, .0973));
 		p3 += dot(p3, p3.yzx+19.19);
@@ -144,7 +167,7 @@ struct noise_str
 
 	//----------------------------------------------------------------------------------------
 	//  3 out, 1 in...
-	float3 hash31(float p)
+	float3 hash31_internal(float p)
 	{
 	float3 p3 = frac(p * float3(.1031, .1030, .0973));
 	p3 += dot(p3, p3.yzx+19.19);
@@ -154,7 +177,7 @@ struct noise_str
 
 	//----------------------------------------------------------------------------------------
 	///  3 out, 2 in...
-	float3 hash32(float2 p)
+	float3 hash32_internal(float2 p)
 	{
 		float3 p3 = frac(p.xyx * float3(.1031, .1030, .0973));
 		p3 += dot(p3, p3.yxz+19.19);
@@ -163,7 +186,7 @@ struct noise_str
 
 	//----------------------------------------------------------------------------------------
 	///  3 out, 3 in...
-	float3 hash33(float3 p3)
+	float3 hash33_internal(float3 p3)
 	{
 		p3 = frac(p3 * float3(.1031, .1030, .0973));
 		p3 += dot(p3, p3.yxz+19.19);
@@ -173,7 +196,7 @@ struct noise_str
 
 	//----------------------------------------------------------------------------------------
 	// 4 out, 1 in...
-	float4 hash41(float p)
+	float4 hash41_internal(float p)
 	{
 		float4 p4 = frac(p * float4(.1031, .1030, .0973, .1099));
 		p4 += dot(p4, p4.wzxy+19.19);
@@ -183,7 +206,7 @@ struct noise_str
 
 	//----------------------------------------------------------------------------------------
 	// 4 out, 2 in...
-	float4 hash42(float2 p)
+	float4 hash42_internal(float2 p)
 	{
 		float4 p4 = frac(p.xyxy * float4(.1031, .1030, .0973, .1099));
 		p4 += dot(p4, p4.wzxy+19.19);
@@ -193,7 +216,7 @@ struct noise_str
 
 	//----------------------------------------------------------------------------------------
 	// 4 out, 3 in...
-	float4 hash43(float3 p)
+	float4 hash43_internal(float3 p)
 	{
 		float4 p4 = frac(p.xyzx  * float4(.1031, .1030, .0973, .1099));
 		p4 += dot(p4, p4.wzxy+19.19);
@@ -202,35 +225,10 @@ struct noise_str
 
 	//----------------------------------------------------------------------------------------
 	// 4 out, 4 in...
-	float4 hash44(float4 p4)
+	float4 hash44_internal(float4 p4)
 	{
 		p4 = frac(p4  * float4(.1031, .1030, .0973, .1099));
 		p4 += dot(p4, p4.wzxy+19.19);
 		return frac((p4.xxyz+p4.yzzw)*p4.zywx);
 	}
-}
-
-noise_str noise_ff;
-
-#define dnoise(x, RandomSeed) noise_ff.dnoise(x, RandomSeed)
-#define dnoise2(x, RandomSeed) noise_ff.dnoise2(x, RandomSeed)
-#define dnoise3(x, RandomSeed) noise_ff.dnoise3(x, RandomSeed)
-#define dnoise4(x, RandomSeed) noise_ff.dnoise4(x, RandomSeed)
-#define voronoiseHash3(p, phase) noise_ff.voronoiseHash3(p, phase)
-#define voronoise(uv, voronoi, smoothness, phase) noise_ff.voronoise(uv, voronoi, smoothness, phase)
-#define voronoise3(pos, voronoi, smoothness) noise_ff.voronoise3(pos, voronoi, smoothness)
-#define hash11(p) noise_ff.hash11(p)
-#define hash12(p) noise_ff.hash12(p)
-#define hash13(p3) noise_ff.hash13(p3)
-#define hash21(p) noise_ff.hash21(p)
-#define hash22(p) noise_ff.hash22(p)
-#define hash23(p3) noise_ff.hash23(p3)
-#define hash31(p) noise_ff.hash31(p)
-#define hash32(p) noise_ff.hash32(p)
-#define hash33(p3) noise_ff.hash33(p3)
-#define hash41(p) noise_ff.hash41(p)
-#define hash42(p) noise_ff.hash42(p)
-#define hash43(p) noise_ff.hash43(p)
-#define hash44(p4) noise_ff.hash44(p4)
-
-#endif
+} noise_ff;

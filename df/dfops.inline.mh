@@ -1,4 +1,6 @@
 
+#define mod(a, b) fmod(a, b)
+
 float U(float a, float b) {return min(a,b);}
 float S(float a, float b) {return max(a,-b);}
 float I(float a, float b) {return max(a,b);}
@@ -16,6 +18,142 @@ float SSmooth( float a, float b, float k )
 float ISmooth( float a, float b, float k )
 {
     return log( exp(a/k) + exp(b/k) ) * k;
+}
+
+// from http://mercury.sexy/hg_sdf/:
+// "
+// Conventions:
+//
+// Many operate only on a subset of the three dimensions. For those,
+// you must choose the dimensions that you want manipulated
+// by supplying e.g. <p.x> or <p.zx>
+//
+// <inout p> is always the first argument and modified in place.
+//
+// Many of the operators partition space into cells. An identifier
+// or cell index is returned, if possible. This return value is
+// intended to be optionally used e.g. as a random seed to change
+// parameters of the distance functions inside the cells.
+//
+// Unless stated otherwise, for cell index 0, <p> is unchanged and cells
+// are centered on the origin so objects don't have to be moved to fit.
+// "
+
+// Rotate around a coordinate axis (i.e. in a plane perpendicular to that axis) by angle <a>.
+// Read like this: R(p.xz, a) rotates "x towards z".
+// This is fast if <a> is a compile-time constant and slower (but still practical) if not.
+void oR(inout float2 p, float a) {
+	p = cos(a)*p + sin(a)*float2(p.y, -p.x);
+}
+// Shortcut for 45-degrees rotation
+void oR45(inout float2 p) {
+	p = (p + float2(p.y, -p.x))*sqrt(0.5);
+}
+// Repeat space along one axis. Use like this to repeat along the x axis:
+// <float cell = pMod1(p.x,5);> - using the return value is optional.
+float oMod1(inout float p, float size) {
+	float halfsize = size*0.5;
+	float c = floor((p + halfsize)/size);
+	p = mod(p + halfsize, size) - halfsize;
+	return c;
+}
+// Same, but mirror every second cell so they match at the boundaries
+float oModMirror1(inout float p, float size) {
+	float halfsize = size*0.5;
+	float c = floor((p + halfsize)/size);
+	p = mod(p + halfsize,size) - halfsize;
+	p *= mod(c, 2.0)*2 - 1;
+	return c;
+}
+// Repeat the domain only in positive direction. Everything in the negative half-space is unchanged.
+float oModSingle1(inout float p, float size) {
+	float halfsize = size*0.5;
+	float c = floor((p + halfsize)/size);
+	if (p >= 0)
+		p = mod(p + halfsize, size) - halfsize;
+	return c;
+}
+// Repeat only a few times: from indices <start> to <stop> (similar to above, but more flexible)
+float oModInterval1(inout float p, float size, float start, float stop) {
+	float halfsize = size*0.5;
+	float c = floor((p + halfsize)/size);
+	p = mod(p+halfsize, size) - halfsize;
+	if (c > stop) { //yes, this might not be the best thing numerically.
+		p += size*(c - stop);
+		c = stop;
+	}
+	if (c <start) {
+		p += size*(c - start);
+		c = start;
+	}
+	return c;
+}
+// Repeat around the origin by a fixed angle.
+// For easier use, num of repetitions is use to specify the angle.
+float oModPolar(inout float2 p, float repetitions) {
+	float angle = 2*PI/repetitions;
+	float a = atan2(p.y, p.x) + angle/2.;
+	float r = length(p);
+	float c = floor(a/angle);
+	a = mod(a,angle) - angle/2.;
+	p = float2(cos(a), sin(a))*r;
+	// For an odd number of repetitions, fix cell index of the cell in -x direction
+	// (cell index would be e.g. -5 and 5 in the two halves of the cell):
+	if (abs(c) >= (repetitions/2)) c = abs(c);
+	return c;
+}
+// Repeat in two dimensions
+float2 oMod2(inout float2 p, float2 size) {
+	float2 c = floor((p + size*0.5)/size);
+	p = mod(p + size*0.5,size) - size*0.5;
+	return c;
+}
+// Same, but mirror every second cell so all boundaries match
+float2 oModMirror2(inout float2 p, float2 size) {
+	float2 halfsize = size*0.5;
+	float2 c = floor((p + halfsize)/size);
+	p = mod(p + halfsize, size) - halfsize;
+	p *= mod(c,2)*2 - 1;
+	return c;
+}
+// Same, but mirror every second cell at the diagonal as well
+float2 oModGrid2(inout float2 p, float2 size) {
+	float2 c = floor((p + size*0.5)/size);
+	p = mod(p + size*0.5, size) - size*0.5;
+	p *= mod(c,2)*2 - 1;
+	p -= size/2;
+	if (p.x > p.y) p.xy = p.yx;
+	return floor(c/2);
+}
+// Repeat in three dimensions
+float3 oMod3(inout float3 p, float3 size) {
+	float3 c = floor((p + size*0.5)/size);
+	p = mod(p + size*0.5, size) - size*0.5;
+	return c;
+}
+// Mirror at an axis-aligned plane which is at a specified distance <dist> from the origin.
+float oMirror (inout float p, float dist) {
+	float s = sgn(p);
+	p = abs(p)-dist;
+	return s;
+}
+// Mirror in both dimensions and at the diagonal, yielding one eighth of the space.
+// translate by dist before mirroring.
+float2 oMirrorOctant (inout float2 p, float2 dist) {
+	float2 s = sgn(p);
+	oMirror(p.x, dist.x);
+	oMirror(p.y, dist.y);
+	if (p.y > p.x)
+		p.xy = p.yx;
+	return s;
+}
+// Reflect space at a plane
+float oReflect(inout float3 p, float3 planeNormal, float offset) {
+	float t = dot(p, planeNormal)+offset;
+	if (t < 0) {
+		p = p - (2*t)*planeNormal;
+	}
+	return sgn(t);
 }
 
 // The "Chamfer" flavour makes a 45-degree chamfered edge (the diagonal of a square of size <r>):
@@ -138,7 +276,8 @@ float Pipe(float a, float b, float r) {
 // produces a cylindical pipe that runs along the intersection.
 // No objects remain, only the pipe. This is not a boolean operator.
 float Pipe(float a, float b, float r, float pwr) {
-	return lengthn(float2(a, b), pwr) - r;
+    float l = pow((pow(abs(a),pwr)+pow(abs(b),pwr)),1/pwr);
+	return l - r;
 }
 
 // first object gets a v-shaped engraving where it intersect the second
@@ -153,3 +292,5 @@ float Groove(float a, float b, float ra, float rb) {
 float Tongue(float a, float b, float ra, float rb) {
 	return min(a, max(a - ra, abs(b) - rb));
 }
+
+#undef mod

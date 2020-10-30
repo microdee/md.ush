@@ -1,5 +1,5 @@
-#if !defined(math_common_fxh)
-#define math_common_fxh 1
+#if !defined(math_common_mh)
+#define math_common_mh 1
 
 #include "const.mh"
 #include "vectors.mh"
@@ -42,23 +42,7 @@
 #define ddu(u) max(abs(ddx(u)), abs(ddy(u)))
 #define dduv(uv) max(abs(ddx(uv.x)), abs(ddy(uv.y)))
 
-struct ddxy_str
-{
-    float ddxy(float a, float2 uv)
-    {
-        float mdd = ddu(a);
-        return min(mdd > 0.0f ? mdd : 1.0f, dduv(uv));
-    }
-    float ddxy(float2 a, float2 uv)
-    {
-        float mdd = dduv(a);
-        return min(mdd > 0.0f ? mdd : 1.0f, dduv(uv));
-    }
-};
-
-ddxy_str ddxy_ff;
-
-#define ddxy(a, uv) ddxy_ff.ddxy(a, uv)
+#define ddxy(a, uv) ddxy_ff.ddxy_internal(a, uv)
 
 #define sm_gt(a, b, uv) saturate(map(a, b, (b) + ddxy(a, uv)*2, 0, 1))
 #define sm_lt(a, b, uv) (1-sm_gt(a, b, uv))
@@ -71,3 +55,17 @@ ddxy_str ddxy_ff;
 */
 
 #endif
+
+struct ddxy_str
+{
+    float ddxy_internal(float a, float2 uv)
+    {
+        float mdd = ddu(a);
+        return min(mdd > 0.0f ? mdd : 1.0f, dduv(uv));
+    }
+    float ddxy_internal(float2 a, float2 uv)
+    {
+        float mdd = dduv(a);
+        return min(mdd > 0.0f ? mdd : 1.0f, dduv(uv));
+    }
+} ddxy_ff;

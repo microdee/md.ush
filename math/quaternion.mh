@@ -1,5 +1,5 @@
-#if !defined(math_quaternion_fxh)
-#define math_quaternion_fxh
+#if !defined(math_quaternion_mh)
+#define math_quaternion_mh
 
 #include "common.mh"
 
@@ -27,10 +27,13 @@
          (q).x, (q).y, (q).z, (q).w \
     ))
 
+// myquat.axes2q(...)
 #define axes2q(X, Y, Z) m2q(float3x3(X, Y, Z))
 
 #define aa2q(a, r) \
     float4((a).x * sin((r)*PI), (a).y * sin((r)*PI), (a).z * sin((r)*PI), cos((r)*PI))
+
+#endif
 
 struct quat_str
 {
@@ -118,13 +121,3 @@ struct quat_str
         return qmul(aa2q(fn, eangle), rot);
     }
 }
-
-quat_str quat_ff;
-
-#define m2q(m) quat_ff.m2q(m)
-#define euler(pyr) quat_ff.euler(pyr)
-#define euler(pp, yy, rr) quat_ff.euler(pp, yy, rr)
-#define slerp (a, b, t ) quat_ff.slerp (a, b, t )
-#define qLookAt(d, fwvec) quat_ff.qLookAt(d, fwvec)
-
-#endif
