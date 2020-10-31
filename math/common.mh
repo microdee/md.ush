@@ -38,6 +38,7 @@
 
 // only useful for non-rotating UI widgets, where UV coordinates are assumed to cover the entire widget.
 #define resolution(uv) float2(1.0f/ddx(uv.x), 1.0f/ddy(uv.y))
+#define pixelsize(uv) float2(ddx(uv.x), ddy(uv.y))
 
 #define ddu(u) max(abs(ddx(u)), abs(ddy(u)))
 #define dduv(uv) max(abs(ddx(uv.x)), abs(ddy(uv.y)))
