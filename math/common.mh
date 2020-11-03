@@ -21,6 +21,14 @@
 #define mapWrap(l, smin, smax, dmin, dmax) (dmin + ((((l - (smin)) / (smax - (smin))) + ((l - (smin)) / (smax - (smin))) < 0) % 1) * (dmax - (dmin)))
 #define mapMirror(l, smin, smax, dmin, dmax) (dmin + ((1-2*abs(frac((l - (smin)) / (smax - (smin)) * 0.5) - 0.5)) % 1) * (dmax - (dmin)))
 
+#define min3(a, b, c) min(min(a, b), c)
+#define min4(a, b, c, d) min(min(min(a, b), c), d)
+#define min5(a, b, c, d, e) min(min(min(min(a, b), c), d), e)
+
+#define max3(a, b, c) max(max(a, b), c)
+#define max4(a, b, c, d) max(max(max(a, b), c), d)
+#define max5(a, b, c, d, e) max(max(max(max(a, b), c), d), e)
+
 #define vmax2(a) max((a).x, (a).y)
 #define vmax3(a) max(vmax2(a), (a).z)
 #define vmax4(a) max(vmax3(a), (a).w)
